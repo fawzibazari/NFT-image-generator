@@ -5,7 +5,7 @@
 /tmp
 /out-tsc
 /node_modules
-
+/layers
 # Only exists if Bazel was run
 /bazel-out
 
