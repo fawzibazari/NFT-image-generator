@@ -50,6 +50,19 @@ function WhichToPick(randomizer: MersenneTwister19937, options: any[]) {
   }
 }
 
+function MetaDataGenerator(
+  content: Record<string, any>,
+  tokenId: number,
+  traits: Record<string, string>,
+) {
+  const attributes = [];
+  for (const [trait_type, value] of Object.entries(traits)) {
+    attributes.push({ trait_type, value });
+  }
+
+  return content.metadataTemplate(tokenId, attributes);
+}
+
 async function generateNFTs(
   num: number,
   layersPath: string,
@@ -61,8 +74,6 @@ async function generateNFTs(
     console.log('id of the NFT :' + tokenId);
     const selected = await random(layersPath, content.layers);
     const traits = JSON.stringify(selected.selectedChar);
-    console.log(traits);
-
     if (generated.has(traits)) {
       console.log('Double removed!');
       tokenId--;
@@ -72,6 +83,11 @@ async function generateNFTs(
     }
 
     await LayersMerge(selected.images, path.join(outputPath, `${tokenId}.png`));
+    const metadata = MetaDataGenerator(content, tokenId, selected.selectedChar);
+    fs.writeFileSync(
+      path.join(outputPath, `${tokenId}`),
+      JSON.stringify(metadata),
+    );
   }
 }
 
