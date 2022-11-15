@@ -55,11 +55,24 @@ async function generateNFTs(
   layersPath: string,
   outputPath: string,
 ) {
+  const generated = new Set();
+
   for (let tokenId = 0; tokenId < num; tokenId++) {
     console.log('id of the NFT :' + tokenId);
     const selected = await random(layersPath, content.layers);
+    const traits = JSON.stringify(selected.selectedChar);
+    console.log(traits);
+
+    if (generated.has(traits)) {
+      console.log('Double removed!');
+      tokenId--;
+      continue;
+    } else {
+      generated.add(traits);
+    }
+
     await LayersMerge(selected.images, path.join(outputPath, `${tokenId}.png`));
   }
 }
 
-generateNFTs(20, layersPath, outputPath);
+generateNFTs(100, layersPath, outputPath);
