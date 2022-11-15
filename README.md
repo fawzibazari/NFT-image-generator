@@ -1,7 +1,8 @@
 # NFT-image-generator 🤘
 
 ## What it looks like
-![image](https://user-images.githubusercontent.com/67472505/202037736-6fa43f48-83fe-4df0-855e-2b75de39ac5e.png)
+![image](https://user-images.githubusercontent.com/67472505/202039382-2117ec14-0042-49e5-b143-6d03ef9f3038.png)
+
 ## Installation
 ```bash
 $ yarn install
