@@ -3,18 +3,10 @@ import { Canvas, Image } from 'node-canvas';
 import path from 'path';
 import fs from 'fs';
 import { MersenneTwister19937, bool, real } from 'random-js';
+import { content } from '../layers/content';
 
 const layersPath = path.join(process.cwd(), 'layers');
-console.log(layersPath);
-
-const layers = [
-  path.join(layersPath, 'Background', '2.png'),
-  path.join(layersPath, 'body', '1.png'),
-  path.join(layersPath, 'eyes', '2.png'),
-  path.join(layersPath, 'Glasses', '3_r.png'),
-  path.join(layersPath, 'Mouths', '2.png'),
-  path.join(layersPath, 'Outfits', '4.png'),
-];
+const outputPath = path.join(process.cwd(), 'output');
 
 function Base64ImageSave(base64Image: string, filepath: string) {
   const base64 = base64Image.split(',')[1];
@@ -23,20 +15,51 @@ function Base64ImageSave(base64Image: string, filepath: string) {
 }
 
 async function LayersMerge(layers: string[], output: string) {
-  console.log(layers);
-
   const image = await mergeImages(layers, { Canvas: Canvas, Image: Image });
   Base64ImageSave(image, output);
 }
 
-// LayersMerge(layers, path.join(process.cwd(), 'output', '2.png'));
-
-function random(layersPath: string, layers: any[]) {
-  // MersenneTwister19937 is the largest randomizer
+async function random(layersPath: string, layers: any[]) {
   const randomizer = MersenneTwister19937.autoSeed();
-  console.log(randomizer);
+  const images = [];
+  const selectedChar: Record<string, any> = {};
   for (const layer of layers) {
     if (bool(layer.probability)(randomizer)) {
+      const selected = WhichToPick(randomizer, layer.options);
+      selectedChar[layer.name] = selected.name;
+      images.push(path.join(layersPath, selected.file));
+    }
+  }
+  return {
+    images,
+    selectedChar,
+  };
+}
+
+function WhichToPick(randomizer: MersenneTwister19937, options: any[]) {
+  const ArraySum = options.reduce((acc: any, option: { weight: any }) => {
+    return acc + (option.weight ?? 1.0);
+  }, 0);
+  const r = real(0.0, ArraySum, false)(randomizer);
+  let summedWeight = 0.0;
+  for (const option of options) {
+    summedWeight += option.weight ?? 1.0;
+    if (r <= summedWeight) {
+      return option;
     }
   }
 }
+
+async function generateNFTs(
+  num: number,
+  layersPath: string,
+  outputPath: string,
+) {
+  for (let tokenId = 0; tokenId < num; tokenId++) {
+    console.log('id of the NFT :' + tokenId);
+    const selected = await random(layersPath, content.layers);
+    await LayersMerge(selected.images, path.join(outputPath, `${tokenId}.png`));
+  }
+}
+
+generateNFTs(20, layersPath, outputPath);
